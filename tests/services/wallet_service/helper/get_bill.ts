@@ -1,6 +1,5 @@
 import { request as playwrightRequest } from '@playwright/test';
-import CryptoJS from "crypto-js";
-import { getAuthToken } from "../../merchat_authorization";
+import { getAuthToken } from "../helper/merchat_authorization";
 
 
 export async function getsinglebill (bill_ref :string) : Promise<any>{

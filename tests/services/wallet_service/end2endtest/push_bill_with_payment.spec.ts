@@ -1,9 +1,8 @@
 import { test, expect } from "@playwright/test";
-import * as CryptoJS from "crypto-js";
-import { getAuthToken } from "../../../merchat_authorization";
-import { create_customer } from "../../helper/customer";
-import { get_payment_methods } from '../../helper/get_payment_method'
-import { generateCustomerName, generateSyncCode, generateHash, generate_bill_ref_id } from '../../data/function';
+import { getAuthToken } from "../helper/merchat_authorization";
+import { create_customer } from "../helper/customer";
+import { get_payment_methods } from '../helper/get_payment_method'
+import { generateCustomerName, generateSyncCode, generateHash, generate_bill_ref_id } from '..//data/function';
 
 import { url } from "inspector";
 

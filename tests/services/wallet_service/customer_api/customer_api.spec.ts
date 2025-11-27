@@ -1,8 +1,8 @@
 
 import { test, expect } from '@playwright/test';
 import * as CryptoJS from "crypto-js";
-import { getAuthToken } from "../../../merchat_authorization";
-import { generateCustomerName, generateSyncCode } from '../../data/function';
+import { getAuthToken } from "../helper/merchat_authorization";
+import { generateCustomerName, generateSyncCode } from '../data/function';
 
 //for duplicate name test case
 let name: string;

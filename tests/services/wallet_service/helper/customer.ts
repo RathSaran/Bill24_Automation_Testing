@@ -1,8 +1,5 @@
 import { request as playwrightRequest } from '@playwright/test';
-import CryptoJS from "crypto-js";
-import { getAuthToken } from "../../merchat_authorization";
-
-// currently using on push bill with payment
+import { getAuthToken } from './merchat_authorization';
 
 export async function create_customer (body: any) : Promise<any>{
 const requestContext = await playwrightRequest.newContext();
