@@ -1,6 +1,6 @@
 import { test, expect } from "@playwright/test";
 import * as CryptoJS from "crypto-js";
-import { getAuthToken } from "../../../merchat_authorization";
+import { getAuthToken } from "../helper/merchat_authorization";
 import { log } from "console";
 
 async function wait(ms: number) {
