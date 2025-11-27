@@ -4,8 +4,6 @@ import { create_customer } from "../helper/customer";
 import { get_payment_methods } from '../helper/get_payment_method'
 import { generateCustomerName, generateSyncCode, generateHash, generate_bill_ref_id } from '..//data/function';
 
-import { url } from "inspector";
-
 async function wait(ms: number) {
     return new Promise(resolve => setTimeout(resolve, ms));
 }
@@ -34,9 +32,18 @@ const hash_value = {
 test.describe("push bill with payment API Tests", () => {
     test("Push bill with payment correct data and verify customer wallet balance", async ({ request }) => {
         const merchant_token = await getAuthToken(); // due date 5 minutes later
+        const customer_sync_code = "VV0001"
         const get_payment_methods_response = await get_payment_methods(customer_sync_code);
         const token = get_payment_methods_response.token;
         const wallet_balance = get_payment_methods_response.balance;
+        const new_hash_value = {
+            ref_id: bill_number,
+            date: bill_date,
+            currency: bill_currency,
+            total_amount: bill_amount,
+            customer_sync_code: customer_sync_code,
+            payment_to: To_cpode
+        };
         const push_bill_with_payment_response = await request.post('/bill_payment/push_bill_with_payment', {
             headers: {
                 'Content-Type': 'application/json',
@@ -53,7 +60,7 @@ test.describe("push bill with payment API Tests", () => {
                 "payment_method_token": token,
                 "payment_to": To_cpode,
                 "total_amount_khr": bill_amount,
-                "hash": generateHash(hash_value),
+                "hash": generateHash(new_hash_value),
                 "details": [
                     {
                         "item_name": "testing",
@@ -87,7 +94,7 @@ test.describe("push bill with payment API Tests", () => {
         });
         // Verify wallet balance after payment
         console.log('waiting for wallet balance to update...');
-        await wait(15000); // Wait for 15 seconds to allow the wallet balance to update
+        await wait(20000); // Wait for 20 seconds to allow the wallet balance to update
         const verify_wallet_balance = await request.post('/instant_payment/get_wallet_balance', {
             headers: {
                 'Content-Type': 'application/json',
@@ -101,6 +108,7 @@ test.describe("push bill with payment API Tests", () => {
     });
     test("Push bill with payment without Payment_token and verify customer wallet balance", async ({ request }) => {
         const merchant_token = await getAuthToken(); // due date 5 minutes later
+        const customer_sync_code = 'VV0003';
         const get_payment_methods_response = await get_payment_methods(customer_sync_code);
         //const token = get_payment_methods_response.token;
         bill_number = generate_bill_ref_id();
@@ -163,7 +171,7 @@ test.describe("push bill with payment API Tests", () => {
         });
         // Verify wallet balance after payment
         console.log('waiting for wallet balance to update...');
-        await wait(15000); // Wait for 15 seconds to allow the wallet balance to update
+        await wait(20000); // Wait for 15 seconds to allow the wallet balance to update
         const verify_wallet_balance = await request.post('/instant_payment/get_wallet_balance', {
             headers: {
                 'Content-Type': 'application/json',
@@ -808,7 +816,7 @@ test.describe("nagative test for push bill with payment API", () => {
         const merchant_token = await getAuthToken(); // due date 5 minutes later
         const get_payment_methods_response = await get_payment_methods(customer_sync_code);
         const token = get_payment_methods_response.token;
-        bill_number= generate_bill_ref_id();
+        bill_number = generate_bill_ref_id();
         const new_hash_value = {
             ref_id: bill_number,
             date: bill_date,
@@ -881,7 +889,7 @@ test.describe("nagative test for push bill with payment API", () => {
             data: {
                 "ref_id": bill_number,
                 "date": bill_date,
-                "due_date": "2026-12-28", // missing field
+                "due_date": due_date, // missing field
                 "description": "Session",
                 "currency": bill_currency,
                 "total_amount": bill_amount,

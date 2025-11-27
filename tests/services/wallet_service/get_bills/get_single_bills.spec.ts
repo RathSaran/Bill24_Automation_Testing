@@ -1,9 +1,9 @@
 import { test, expect } from '@playwright/test';
-import { getAuthToken } from "../../../merchat_authorization";
-import { getsinglebill } from "../../helper/get_bill"
-import { generate_bill_ref_id, generateCustomerName, generateSyncCode, generateHash } from '../../data/function';
-import { pushbillwithpayment } from '../../helper/push_bill_with_payment';
-import { create_customer } from '../../helper/customer';
+import { getAuthToken } from "../helper/merchat_authorization";
+import { getsinglebill } from "../helper/get_bill";
+import { generate_bill_ref_id, generateCustomerName, generateSyncCode, generateHash } from '../data/function';
+import { pushbillwithpayment } from '../helper/push_bill_with_payment';
+import { create_customer } from '../helper/customer';
 
 async function wait(ms: number) {
     return new Promise(resolve => setTimeout(resolve, ms));
