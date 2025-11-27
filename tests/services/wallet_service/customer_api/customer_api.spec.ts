@@ -3,6 +3,7 @@ import { test, expect } from '@playwright/test';
 import * as CryptoJS from "crypto-js";
 import { getAuthToken } from "../helper/merchat_authorization";
 import { generateCustomerName, generateSyncCode } from '../data/function';
+import { create_customer } from "../helper/customer";
 
 //for duplicate name test case
 let name: string;
@@ -67,7 +68,7 @@ test.describe('Customer', () => {
     });
     test('Input customer only required fields', async ({ request }) => {
         const merchant_token = await getAuthToken();
-        const customer_sync_code = sync_code;
+        const customer_sync_code = await generateSyncCode();
         const customer_name = await generateCustomerName();
         const customer_response = await request.post('/customer/create', {
             headers: {
@@ -76,13 +77,13 @@ test.describe('Customer', () => {
             },
             data: {
                 "sync_code": customer_sync_code,
-                "name": name
+                "name": customer_name
             },
         });
         const customer_data = await customer_response.json();
         expect(customer_response.status()).toBe(200);
         expect(customer_data.code).toBe("SUCCESS");
-        expect (customer_data.message).toBe("Success");
+        expect(customer_data.message).toBe("Success");
         expect(customer_data).toMatchObject({
             code: "SUCCESS",
             message: "Success",
@@ -96,7 +97,7 @@ test.describe('Customer', () => {
                 email: null,
                 wallet: []
             }
-        }); 
+        });
     });
     test('Input customer with max-length values Sync Code', async ({ request }) => {
         const merchant_token = await getAuthToken();
@@ -115,7 +116,7 @@ test.describe('Customer', () => {
                 "name_kh": "គង្គារ",
                 "wallet": [
                     {
-                        "name": customer_name,  
+                        "name": customer_name,
                         "currency": "KHR"
                     }
                 ]
@@ -124,15 +125,15 @@ test.describe('Customer', () => {
         const customer_data = await customer_response.json();
         expect(customer_response.status()).toBe(200);
         expect(customer_data.code).toBe("ERR_MISSED_FIELD");
-        expect (customer_data.message).toBe("[sync_code] must have 50 or fewer digits. Please adjust and retry.");
+        expect(customer_data.message).toBe("[sync_code] must have 50 or fewer digits. Please adjust and retry.");
         expect(customer_data).toMatchObject({
             code: "ERR_MISSED_FIELD",
             message: expect.any(String),
             message_kh: expect.any(String),
             data: null
-        }); 
+        });
     });
-     test('Customer API with case duplicate customer name', async ({ request }) => {
+    test('Customer API with case duplicate customer name', async ({ request }) => {
         const merchant_token = await getAuthToken();
         const customer_sync_code = await generateSyncCode();
         const customer_name = await generateCustomerName();
@@ -187,14 +188,14 @@ test.describe('Customer negative cases', () => {
     test('Create customer with invalid token', async ({ request }) => {
         const invalid_token = "invalid_token";
         const customer_sync_code = await generateSyncCode();
-        const customer_name = await generateCustomerName(); 
+        const customer_name = await generateCustomerName();
         const customer_response = await request.post('/customer/create', {
             headers: {
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${invalid_token}`,
             },
             data: {
-                "sync_code": customer_sync_code,    
+                "sync_code": customer_sync_code,
                 "name": customer_name,
                 "phone": "099 887 521",
                 "email": customer_name + "@gmail.com",
@@ -232,7 +233,7 @@ test.describe('Customer negative cases', () => {
         const customer_data = await customer_response.json();
         expect(customer_response.status()).toBe(200);
         expect(customer_data.code).toBe("ERR_MISSED_FIELD");
-        expect (customer_data.message).toBe("Please provide [sync_code].");
+        expect(customer_data.message).toBe("Please provide [sync_code].");
         expect(customer_data).toMatchObject({
             code: "ERR_MISSED_FIELD",
             message: expect.any(String),
@@ -241,9 +242,9 @@ test.describe('Customer negative cases', () => {
         });
 
     });
-     test('Input customer with duplicate sync_code', async ({ request }) => {
+    test('Input customer with duplicate sync_code', async ({ request }) => {
         const merchant_token = await getAuthToken();
-        const customer_sync_code = sync_code;
+        const customer_sync_code = 'VV0004';
         const customer_name = await generateCustomerName();
         const customer_response = await request.post('/customer/create', {
             headers: {
@@ -267,15 +268,15 @@ test.describe('Customer negative cases', () => {
         const customer_data = await customer_response.json();
         expect(customer_response.status()).toBe(200);
         expect(customer_data.code).toBe("310");
-        expect (customer_data.message).toBe("This customer already exist");
+        expect(customer_data.message).toBe("This customer already exist");
         expect(customer_data).toMatchObject({
             code: "310",
             message: expect.any(String),
             message_kh: expect.any(String),
-            data:expect.any(Object)
+            data: expect.any(Object)
         });
     });
-       test('Input customer with invalid email format', async ({ request }) => {
+    test('Input customer with invalid email format', async ({ request }) => {
         const merchant_token = await getAuthToken();
         const customer_sync_code = await generateSyncCode();
         const customer_name = await generateCustomerName();
@@ -292,7 +293,7 @@ test.describe('Customer negative cases', () => {
                 "name_kh": "គង្គារ",
                 "wallet": [
                     {
-                        "name": customer_name,  
+                        "name": customer_name,
                         "currency": "KHR"
                     }
                 ]
@@ -301,13 +302,13 @@ test.describe('Customer negative cases', () => {
         const customer_data = await customer_response.json();
         expect(customer_response.status()).toBe(200);
         expect(customer_data.code).toBe("ERR_MISSED_FIELD");
-        expect (customer_data.message).toBe("'Email' is not a valid email address.");
+        expect(customer_data.message).toBe("'Email' is not a valid email address.");
         expect(customer_data).toMatchObject({
             code: "ERR_MISSED_FIELD",
             message: expect.any(String),
             message_kh: expect.any(String),
             data: null
-        }); 
+        });
     });
 });
 
@@ -316,9 +317,26 @@ test.describe('Customer negative cases', () => {
 test.describe('Update Customer', () => {
     test('Update customer with correct data', async ({ request }) => {
         const merchant_token = await getAuthToken();
-        const customer_sync_code = sync_code;
+        const customer_sync_code = generateSyncCode();
+        const customer_name = generateCustomerName();
+        const body = {
+            "sync_code": customer_sync_code,
+            "name": customer_name,
+            "phone": "099 887 521",
+            "email": customer_name + "@gmail.com",
+            "name_kh": "គង្គារ",
+            "wallet": [
+                {
+                    "name": customer_name,
+                    "currency": "KHR"
+                }
+            ]
+        };
+        const customer = await create_customer(body);
+        expect(customer.code).toBe('SUCCESS');
+        
         const updated_name = "Updated Name";
-        const update_response = await request.post('/customer/update', { 
+        const update_response = await request.post('/customer/update', {
             headers: {
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${merchant_token}`,
@@ -366,7 +384,7 @@ test.describe('Update Customer', () => {
         const update_data = await update_response.json();
         expect(update_response.status()).toBe(200);
         expect(update_data.code).toBe("ERR_MISSED_FIELD");
-        expect (update_data.message).toBe("Please provide [sync_code].");
+        expect(update_data.message).toBe("Please provide [sync_code].");
         expect(update_data).toMatchObject({
             code: "ERR_MISSED_FIELD",
             message: expect.any(String),
@@ -377,7 +395,7 @@ test.describe('Update Customer', () => {
     test('Update customer with invalid token', async ({ request }) => {
         const invalid_token = "invalid_token";
         const customer_sync_code = "CSV2001";
-        const update_response = await request.post('/customer/update', { 
+        const update_response = await request.post('/customer/update', {
             headers: {
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${invalid_token}`,
@@ -397,8 +415,24 @@ test.describe('Update Customer', () => {
 test.describe('delete Customer', () => {
     test('Delete customer with correct data', async ({ request }) => {
         const merchant_token = await getAuthToken();
-        const customer_sync_code = sync_code;
-        const delete_response = await request.post('/customer/delete', { 
+        const customer_sync_code = generateSyncCode();
+        const customer_name = generateCustomerName();
+        const body = {
+            "sync_code": customer_sync_code,
+            "name": customer_name,
+            "phone": "099 887 521",
+            "email": customer_name + "@gmail.com",
+            "name_kh": "គង្គារ",
+            "wallet": [
+                {
+                    "name": customer_name,
+                    "currency": "KHR"
+                }
+            ]
+        };
+        const customer = await create_customer(body);
+        expect(customer.code).toBe('SUCCESS');
+        const delete_response = await request.post('/customer/delete', {
             headers: {
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${merchant_token}`,
@@ -410,7 +444,7 @@ test.describe('delete Customer', () => {
         expect(delete_response.ok()).toBeTruthy();
         const delete_data = await delete_response.json();
         expect(delete_data.code).toBe("000");
-        expect (delete_data.message).toBe(" Customer deleted successfully. ");
+        expect(delete_data.message).toBe(" Customer deleted successfully. ");
         expect(delete_data).toMatchObject({
             code: "000",
             message: " Customer deleted successfully. ",
@@ -419,7 +453,7 @@ test.describe('delete Customer', () => {
         });
     });
     test('Delete customer with missing required field', async ({ request }) => {
-        const merchant_token = await getAuthToken();    
+        const merchant_token = await getAuthToken();
         const delete_response = await request.post('/customer/delete', {
             headers: {
                 'Content-Type': 'application/json',
@@ -432,7 +466,7 @@ test.describe('delete Customer', () => {
         const delete_data = await delete_response.json();
         expect(delete_response.status()).toBe(200);
         expect(delete_data.code).toBe("ERR_MISSED_FIELD");
-        expect (delete_data.message).toBe("Please provide [customer_sync_code].");
+        expect(delete_data.message).toBe("Please provide [customer_sync_code].");
         expect(delete_data).toMatchObject({
             code: "ERR_MISSED_FIELD",
             message: expect.any(String),
@@ -490,7 +524,7 @@ test.describe('Get customer Detail', () => {
             data: {
                 sync_code: customer_sync_code,
                 name: customer_name,
-                name_kh: expect.any(String),    
+                name_kh: expect.any(String),
                 phone: "099 887 521",
                 email: customer_name + "@gmail.com",
                 walletBalances: [{
@@ -517,7 +551,7 @@ test.describe('Get customer Detail negative cases', () => {
         const get_data = await get_response.json();
         expect(get_response.status()).toBe(200);
         expect(get_data.code).toBe("ERR_MISSED_FIELD");
-        expect (get_data.message).toBe("Please provide [customer_sync_code].");
+        expect(get_data.message).toBe("Please provide [customer_sync_code].");
         expect(get_data).toMatchObject({
             code: "ERR_MISSED_FIELD",
             message: expect.any(String),
@@ -543,7 +577,7 @@ test.describe('Get customer Detail negative cases', () => {
 });
 
 async function wait(ms: number) {
-  return new Promise(resolve => setTimeout(resolve, ms));
+    return new Promise(resolve => setTimeout(resolve, ms));
 }
 
 // test case Get wallet balance by customer sync code
@@ -657,7 +691,7 @@ test.describe('Get wallet balance by customer sync code', () => {
             code: "311",
             message: expect.any(String),
             message_kh: expect.any(String)
-     
+
         });
     });
 });

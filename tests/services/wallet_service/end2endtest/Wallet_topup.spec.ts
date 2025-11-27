@@ -74,7 +74,7 @@ const SECRET_KEY =
 // Test data for top-up
 let referrer_key = "4315";
 let token_biller = "529404f1-e439-45ba-b3f2-cdd7dc3cc336";
-let customer_sync_code = "VV0004";
+let customer_sync_code = "VV0007";
 let topup_amount = 12000;
 let bank_token = "3c81cc406c554b7a90030efed8a4c23b";//AC bank
 
@@ -144,7 +144,6 @@ test.describe("Wallet Top-up API Tests", () => {
       "identity_code": tran_id,
       "fee_channel": "MERCHANT",
     };
-
     const inquiryResponse = await request.post(process.env.PAYMENT_Inquiry!, {
       headers: {
         "Accept": "application/json",
@@ -194,7 +193,7 @@ test.describe("Wallet Top-up API Tests", () => {
     console.log("Confirm Response message:", confirmjsonmessage);
     //console.log("Confirm Response Body:", await confirmResponse.text());
     expect(confirmResponse.ok()).toBeTruthy();
-    console.log("Waiting 12 seconds for Queue processing...");
+    console.log("Waiting 20 seconds for Queue processing...");
     await wait(20000); // Wait for 20 seconds to ensure processing is complete
     const getnewamount = await request.post("/customer/get_customer_detail", {
       headers: {

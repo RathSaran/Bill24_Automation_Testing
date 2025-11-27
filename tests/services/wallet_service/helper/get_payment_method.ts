@@ -1,6 +1,5 @@
 import { request as playwrightRequest } from '@playwright/test';
-import CryptoJS from "crypto-js";
-import { getAuthToken } from "../../../merchat_authorization";
+import { getAuthToken } from './merchat_authorization';
 
 export async function get_payment_methods(customer_sync_code: string): Promise<any> {
     const requestContext = await playwrightRequest.newContext();
